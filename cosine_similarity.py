@@ -3,12 +3,15 @@
 # @Author : Slave
 # @File : jaccard_similarity
 # @Project : 3122004884
-
+import cProfile
 import multiprocessing
 import re
 import jieba
 import string
 import sys
+from collections import Counter
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from langdetect import detect
 from nltk.corpus import stopwords as nltk_stopwords
 
@@ -69,37 +72,35 @@ def preprocess_text(text):
     elif language == 'en':
         text = remove_punctuation_en(text)
         text = to_lower_en(text)
-        # text = remove_stopwords_en(text)
-    return set(text.split())
-    # return text
+        text = remove_stopwords_en(text)
+    return Counter(text.split())
 
 
-def jaccard_similarity(words_text1, words_text2):
-    intersection = words_text1.intersection(words_text2)
-    union = words_text1.union(words_text2)
-    return len(intersection) / len(union)
+def cosine_similarity_sklearn(vec1, vec2):
+    # 将Counter对象转换为字符串
+    text1 = ' '.join(['{} {}'.format(k, v) for k, v in vec1.items()])
+    text2 = ' '.join(['{} {}'.format(k, v) for k, v in vec2.items()])
+
+    # 创建CountVectorizer对象
+    vectorizer = CountVectorizer()
+
+    # 使用CountVectorizer对象将文本转换为向量
+    X = vectorizer.fit_transform([text1, text2])
+
+    # 计算余弦相似度
+    similarity = cosine_similarity(X[0], X[1])[0][0]
+
+    return round(similarity, 2)
 
 
-# def worker(file_path1, file_path2, output_file):
-#     text1 = preprocess_text(file_path1)
-#     text2 = preprocess_text(file_path2)
-#
-#     similarity = jaccard_similarity(text1, text2)
-#     similarity = round(similarity, 2)  # 保留两位小数
-#
-#     with open(output_file, 'w') as f:
-#         f.write('jaccard_similarity is:' + str(similarity))
-
-
-def worker(words_text1, words_text2, output_file):
-    similarity = jaccard_similarity(words_text1, words_text2)
-    similarity = round(similarity, 2)  # 保留两位小数
+def worker(vec1, vec2, output_file):
+    similarity = cosine_similarity_sklearn(vec1, vec2)
 
     with open(output_file, 'w') as f:
-        f.write('jaccard_similarity is:' + str(similarity))
+        f.write('cosine_similarity is:' + str(similarity))
 
 
-def main_jaccard():
+def main_cosine():
     file_paths1 = sys.argv[1::3]  # 第一个输入文件的路径在命令行参数的第1个位置，然后每隔3个位置就是一个输入文件的路径
     file_paths2 = sys.argv[2::3]  # 第二个输入文件的路径在命令行参数的第2个位置，然后每隔3个位置就是一个输入文件的路径
     output_files = sys.argv[3::3]  # 输出文件的路径在命令行参数的第3个位置，然后每隔3个位置就是一个输出文件的路径
@@ -111,4 +112,7 @@ def main_jaccard():
 
 
 if __name__ == '__main__':
-    main_jaccard()
+    main_cosine()
+    # profiler = cProfile.Profile()
+    # profiler.runcall(main)
+    # profiler.print_stats()
