@@ -120,9 +120,8 @@
   ```py
   from langdetect import detect
   
-  def preprocess_text(file_path, language):
-      with open(file_path, 'r', encoding='utf-8') as f:
-          text = f.read()
+  def preprocess_text(text):
+      language = detect(text)
       if language == 'zh-cn':
           text = remove_punctuation_ch(text)
           text = segment_words_ch(text)
@@ -130,8 +129,129 @@
           text = remove_punctuation_en(text)
           text = to_lower_en(text)
           text = remove_stopwords_en(text)
-      return text
+      return Counter(text.split())
   ```
 
+- 相似度的计算
 
+  三种方法均已实现此处仅给出main默认使用的余弦算法
+
+  ```python
+  def cosine_similarity_sklearn(vec1, vec2):
+      # 将Counter对象转换为字符串
+      text1 = ' '.join(['{} {}'.format(k, v) for k, v in vec1.items()])
+      text2 = ' '.join(['{} {}'.format(k, v) for k, v in vec2.items()])
+  
+      # 创建CountVectorizer对象
+      vectorizer = CountVectorizer()
+  
+      # 使用CountVectorizer对象将文本转换为向量
+      X = vectorizer.fit_transform([text1, text2])
+  
+      # 计算余弦相似度
+      similarity = cosine_similarity(X[0], X[1])[0][0]
+  
+      return round(similarity, 2)
+  ```
+
+- 将结果输出保存到目标文件
+
+  ```py
+  def worker(vec1, vec2, output_file):
+      similarity = cosine_similarity_sklearn(vec1, vec2)
+  
+      with open(output_file, 'w') as f:
+          f.write('cosine_similarity is:' + str(similarity))
+  ```
+
+- 接受文件参数以及函数调用入口
+
+  ```py
+  def main_cosine(file_path1, file_path2, output_file):
+      text1 = preprocess_text(file_path1)
+      text2 = preprocess_text(file_path2)
+  
+      similarity = cosine_similarity_score(text1, text2)
+      similarity = round(similarity, 2)
+  
+      with open(output_file, 'w') as f:
+          f.write('cosine_similarity is ' + str(similarity))
+      print(similarity)
+  ```
+
+##### 接口优化
+
+对于当前代码我们在执行的时候不难发现有许多存在的问题，最主要的问题是无法满足5s完成计算的需求，所以我们来分析程序的运行
+
+通过测试案例：使用命令行来传入
+
+```py
+ python cosine_similarity.py .\orig.txt .\orig_0.8_add.txt .\output.txt
+```
+
+此处的两个文件有千字
+
+运行函数监测并发图
+
+![](E:\Software-engineering\picture\first_test.png)
+
+不难发现这是进程耗时巨大
+
+开始优化处理
+
+###### 考虑多进程执行
+
+```py
+def main():
+    file_paths1 = sys.argv[1::3]  # 第一个输入文件的路径在命令行参数的第1个位置，然后每隔3个位置就是一个输入文件的路径
+    file_paths2 = sys.argv[2::3]  # 第二个输入文件的路径在命令行参数的第2个位置，然后每隔3个位置就是一个输入文件的路径
+    output_files = sys.argv[3::3]  # 输出文件的路径在命令行参数的第3个位置，然后每隔3个位置就是一个输出文件的路径
+
+    with multiprocessing.Pool() as pool:
+        texts1 = pool.map(preprocess_text, file_paths1)
+        texts2 = pool.map(preprocess_text, file_paths2)
+        pool.starmap(worker, zip(texts1, texts2, output_files))
+```
+
+优化之后：
+
+![](E:\Software-engineering\picture\second_test.png)
+
+不难发现变快了近一秒
+
+再次尝试优化分析
+
+通过Python的`cProfile`模块生成性能分析报告
+
+```html
+ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+2       0.000    0.000    3.900    1.950 pool.py:359(map)
+3       0.000    0.000    3.901    1.300 pool.py:761(wait)
+3       0.000    0.000    3.901    1.300 pool.py:764(get)
+6       0.000    0.000    3.905    0.651 threading.py:288(wait)
+```
+
+表中列出花销比较大的几个函数，查阅资料：`multiprocessing.Pool().map`函数和`multiprocessing.pool.wait/get`函数以及`threading.wait`函数都是用于并行处理和线程同步的，执行时间主要取决于代码的并行部分的运行时间，没有办法从这些代码入手
+
+那么改变思路，来优化并行任务减少并行任务量
+
+```py
+def main():
+    file_paths1 = sys.argv[1::3]  # 第一个输入文件的路径在命令行参数的第1个位置，然后每隔3个位置就是一个输入文件的路径
+    file_paths2 = sys.argv[2::3]  # 第二个输入文件的路径在命令行参数的第2个位置，然后每隔3个位置就是一个输入文件的路径
+    output_files = sys.argv[3::3]  # 输出文件的路径在命令行参数的第3个位置，然后每隔3个位置就是一个输出文件的路径
+
+    with multiprocessing.Pool(min(len(file_paths1), multiprocessing.cpu_count())) as pool:
+        texts1 = pool.map(preprocess_text, file_paths1)
+        texts2 = pool.map(preprocess_text, file_paths2)
+        pool.starmap(worker, zip(texts1, texts2, output_files))
+```
+
+通过对比cpu核心数量与文件数量，取其中最小值可以大大减少无用进程
+
+执行代码
+
+![](E:\Software-engineering\picture\last_test.png)
+
+时间减少1秒左右，两次优化将效率提高一倍左右
 
