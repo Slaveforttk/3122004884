@@ -48,22 +48,9 @@ def remove_stopwords_en(text):
     return ' '.join(words)
 
 
-# 综合使用
-# def preprocess_text(file_path):
-#     with open(file_path, 'r', encoding='utf-8') as f:
-#         text = f.read()
-#     language = detect(text)
-#     if language == 'zh-cn':
-#         text = remove_punctuation_ch(text)
-#         text = segment_words_ch(text)
-#     elif language == 'en':
-#         text = remove_punctuation_en(text)
-#         text = to_lower_en(text)
-#         text = remove_stopwords_en(text)
-#     return text
-
-
-def preprocess_text(text):
+def preprocess_text(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
     language = detect(text)
     if language == 'zh-cn':
         text = remove_punctuation_ch(text)

@@ -61,7 +61,9 @@ def remove_stopwords_en(text):
 #     return text
 
 
-def preprocess_text(text):
+def preprocess_text(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
     language = detect(text)
     if language == 'zh-cn':
         text = remove_punctuation_ch(text)
@@ -78,17 +80,6 @@ def jaccard_similarity(words_text1, words_text2):
     intersection = words_text1.intersection(words_text2)
     union = words_text1.union(words_text2)
     return len(intersection) / len(union)
-
-
-# def worker(file_path1, file_path2, output_file):
-#     text1 = preprocess_text(file_path1)
-#     text2 = preprocess_text(file_path2)
-#
-#     similarity = jaccard_similarity(text1, text2)
-#     similarity = round(similarity, 2)  # 保留两位小数
-#
-#     with open(output_file, 'w') as f:
-#         f.write('jaccard_similarity is:' + str(similarity))
 
 
 def worker(words_text1, words_text2, output_file):
