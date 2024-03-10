@@ -102,7 +102,7 @@ $$
 
 给出接口设计的调用图，能力有限不能理解所有内容
 
-![](https://raw.githubusercontent.com/Slaveforttk/picture/master/call_graph.png)
+<img src="https://s2.loli.net/2024/03/10/j1zvTrdeVmyJnHP.png" />
 
 ##### 单元测试
 
@@ -133,7 +133,7 @@ def test_cosine_similarity_sklearn(self):
 
 代码覆盖率
 
-![](https://raw.githubusercontent.com/Slaveforttk/picture/master/code_rate.png)
+<img src="https://s2.loli.net/2024/03/10/2Z3mOKk7HRf1S4z.png" />
 
 修改了几次效果不是很好，或许忽略了某些情况
 
@@ -153,7 +153,7 @@ def test_cosine_similarity_sklearn(self):
 
 运行函数监测并发图
 
-![](https://raw.githubusercontent.com/Slaveforttk/picture/master/first_test.png)
+<img src="https://s2.loli.net/2024/03/10/FhY5W9rEl8zmsap.png" />
 
 不难发现这次进程耗时巨大
 
@@ -165,7 +165,7 @@ def test_cosine_similarity_sklearn(self):
 
 优化之后：
 
-![](https://raw.githubusercontent.com/Slaveforttk/picture/master/second_test.png)
+<img src="https://s2.loli.net/2024/03/10/QUKBgTOcfIWoApN.png" />
 
 不难发现变快了近一秒
 
@@ -191,7 +191,7 @@ ncalls  tottime  percall  cumtime  percall filename:lineno(function)
 
 执行代码
 
-![](https://raw.githubusercontent.com/Slaveforttk/picture/master/last_test.png)
+<img src="https://s2.loli.net/2024/03/10/yblp3j9HxWuFS6d.png" />
 
 时间减少1秒左右，两次优化将效率提高一倍左右
 
