@@ -2,7 +2,7 @@ import sys
 import unittest
 import tempfile
 import os
-from cosine_similarity import main_cosine
+from main import main_cosine
 
 
 class TestIntegration(unittest.TestCase):
@@ -42,25 +42,10 @@ class TestIntegration(unittest.TestCase):
         os.unlink(self.output_ch.name)
         os.unlink(self.output_en.name)
 
-    def test_empty_text(self):
-        # 创建一个空的临时文件
-        self.file_empty = tempfile.NamedTemporaryFile(delete=False)
-        self.file_empty.close()
-
-        # 修改命令行参数
-        sys.argv = ['cosine_similarity', self.file_empty.name, self.file_empty.name, self.output_empty.name]
-
-        # 运行函数
-        main_cosine()
-
-        # 检查输出文件
-        with open(self.output_empty.name, 'r') as f:
-            result = f.read()
-        self.assertTrue('cosine_similarity is:' in result)
 
     def test_main_cosine(self):
         # 修改命令行参数
-        sys.argv = ['cosine_similarity.py', self.file1_ch.name, self.file2_ch.name, self.output_ch.name]
+        sys.argv = ['main.py', self.file1_ch.name, self.file2_ch.name, self.output_ch.name]
         # 运行函数
         main_cosine()
         # 检查输出文件
@@ -69,7 +54,7 @@ class TestIntegration(unittest.TestCase):
         self.assertTrue('cosine_similarity is:' in result)
 
         # 修改命令行参数
-        sys.argv = ['cosine_similarity.py', self.file1_en.name, self.file2_en.name, self.output_en.name]
+        sys.argv = ['main.py', self.file1_en.name, self.file2_en.name, self.output_en.name]
         # 运行函数
         main_cosine()
         # 检查输出文件

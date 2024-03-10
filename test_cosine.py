@@ -1,8 +1,8 @@
 import unittest
 from collections import Counter
 
-from cosine_similarity import remove_punctuation_ch, segment_words_ch, to_lower_en, remove_punctuation_en, \
-    remove_stopwords_en, preprocess_text, cosine_similarity_sklearn
+from main import remove_punctuation_ch, segment_words_ch, to_lower_en, remove_punctuation_en, \
+    remove_stopwords_en, preprocess_text, cosine_similarity_sklearn, worker
 
 
 class TestCosine(unittest.TestCase):
@@ -30,6 +30,18 @@ class TestCosine(unittest.TestCase):
         vec2 = Counter(["你好", "世界"])
         self.assertEqual(cosine_similarity_sklearn(vec1, vec2), 1.0)
 
+    # 第一次修改可能存在的问题测试
+    def test_file_not_found(self):
+        with self.assertRaises(ValueError):
+            preprocess_text('')
+
+    def test_file_not_writable(self):
+        with self.assertRaises(PermissionError):
+            worker(Counter(), Counter(), '/non_writable_file.txt')
+
+    def test_invalid_language(self):
+        with self.assertRaises(ValueError):
+            preprocess_text('Invalid language text')
 
 if __name__ == '__main__':
     unittest.main()

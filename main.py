@@ -3,8 +3,10 @@
 # @Author : Slave
 # @File : jaccard_similarity
 # @Project : 3122004884
-import cProfile
+
+# import cProfile
 import multiprocessing
+import os
 import re
 import jieba
 import string
@@ -49,22 +51,9 @@ def remove_stopwords_en(text):
     return ' '.join(words)
 
 
-# 综合使用
-# def preprocess_text(file_path):
-#     with open(file_path, 'r', encoding='utf-8') as f:
-#         text = f.read()
-#     language = detect(text)
-#     if language == 'zh-cn':
-#         text = remove_punctuation_ch(text)
-#         text = segment_words_ch(text)
-#     elif language == 'en':
-#         text = remove_punctuation_en(text)
-#         text = to_lower_en(text)
-#         text = remove_stopwords_en(text)
-#     return text
-
-
-def preprocess_text(text):
+def preprocess_text(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
     language = detect(text)
     if language == 'zh-cn':
         text = remove_punctuation_ch(text)
@@ -76,6 +65,18 @@ def preprocess_text(text):
     return Counter(text.split())
 
 
+# def preprocess_text(text):
+#     language = detect(text)
+#     if language == 'zh-cn':
+#         text = remove_punctuation_ch(text)
+#         text = segment_words_ch(text)
+#     elif language == 'en':
+#         text = remove_punctuation_en(text)
+#         text = to_lower_en(text)
+#         text = remove_stopwords_en(text)
+#     return Counter(text.split())
+
+
 def cosine_similarity_sklearn(vec1, vec2):
     # 将Counter对象转换为字符串
     text1 = ' '.join(['{} {}'.format(k, v) for k, v in vec1.items()])
@@ -85,12 +86,13 @@ def cosine_similarity_sklearn(vec1, vec2):
     vectorizer = CountVectorizer()
 
     # 使用CountVectorizer对象将文本转换为向量
-    X = vectorizer.fit_transform([text1, text2])
+    x = vectorizer.fit_transform([text1, text2])
 
     # 计算余弦相似度
-    similarity = cosine_similarity(X[0], X[1])[0][0]
-
-    return round(similarity, 2)
+    similarity = cosine_similarity(x[0], x[1])[0][0]
+    similarity = round(similarity, 2)
+    print(similarity)
+    return similarity
 
 
 def worker(vec1, vec2, output_file):
@@ -101,9 +103,14 @@ def worker(vec1, vec2, output_file):
 
 
 def main_cosine():
-    file_paths1 = sys.argv[1::3]  # 第一个输入文件的路径在命令行参数的第1个位置，然后每隔3个位置就是一个输入文件的路径
-    file_paths2 = sys.argv[2::3]  # 第二个输入文件的路径在命令行参数的第2个位置，然后每隔3个位置就是一个输入文件的路径
-    output_files = sys.argv[3::3]  # 输出文件的路径在命令行参数的第3个位置，然后每隔3个位置就是一个输出文件的路径
+    file_paths1 = [os.path.normpath(path) for path in sys.argv[1::3]]
+    file_paths2 = [os.path.normpath(path) for path in sys.argv[2::3]]
+    output_files = [os.path.normpath(path) for path in sys.argv[3::3]]
+
+    # 检查文件路径是否存在
+    for file_path in file_paths1 + file_paths2:
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"文件 {file_path} 不存在")
 
     with multiprocessing.Pool(min(len(file_paths1), multiprocessing.cpu_count())) as pool:
         texts1 = pool.map(preprocess_text, file_paths1)
@@ -114,5 +121,5 @@ def main_cosine():
 if __name__ == '__main__':
     main_cosine()
     # profiler = cProfile.Profile()
-    # profiler.runcall(main)
+    # profiler.runcall(main_cosine)
     # profiler.print_stats()
