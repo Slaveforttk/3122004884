@@ -185,7 +185,7 @@
 
 给出接口设计的调用图，能力有限不能理解所有内容
 
-![](E:\Software-engineering\picture\call_graph.png)
+![](https://raw.githubusercontent.com/Slaveforttk/picture/master/call_graph.png)
 
 ##### 单元测试
 
@@ -214,7 +214,7 @@ def test_cosine_similarity_sklearn(self):
 
 代码覆盖率
 
-![](E:\Software-engineering\picture\code_rate.png)
+![](https://raw.githubusercontent.com/Slaveforttk/picture/master/code_rate.png)
 
 修改了几次效果不是很好，或许忽略了某些情况
 
@@ -242,7 +242,7 @@ class TestIntegration(unittest.TestCase)
 
 运行函数监测并发图
 
-![](E:\Software-engineering\picture\first_test.png)
+![](https://raw.githubusercontent.com/Slaveforttk/picture/master/first_test.png)
 
 不难发现这次进程耗时巨大
 
@@ -266,7 +266,7 @@ def main():
 
 优化之后：
 
-![](E:\Software-engineering\picture\second_test.png)
+![](https://raw.githubusercontent.com/Slaveforttk/picture/master/second_test.png)
 
 不难发现变快了近一秒
 
@@ -304,7 +304,7 @@ def main():
 
 执行代码
 
-![](E:\Software-engineering\picture\last_test.png)
+![](https://raw.githubusercontent.com/Slaveforttk/picture/master/last_test.png)
 
 时间减少1秒左右，两次优化将效率提高一倍左右
 
