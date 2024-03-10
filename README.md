@@ -5,6 +5,10 @@
 | 这个作业要求在哪里   | [个人项目](https://edu.cnblogs.com/campus/gdgy/SoftwareEngineering2024/homework/13136) |
 | 这个作业的目标       | 初步认识软件开发流程，独立培养开发能力，熟悉PSP记录开发过程  |
 
+你可以在GitHub上找到本项目并下载额外三种算法代码
+
+Slave
+
 ### *前言*
 
 
@@ -33,13 +37,9 @@ $$
 ##### [*编辑距离*](https://blog.csdn.net/tianjindong0804/article/details/115803158)
 
 莱文斯坦距离 / 编辑距离（`Edit Distance`，`Levenshtein Distance`只是编辑距离的其中一种）
-$$
-dp[i][j] = 
-\begin{cases} 
-dp[i-1][j-1] & \text{if } A[i] = B[j] \\
-\min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1 & \text{otherwise}
-\end{cases}
-$$
+
+![](https://s2.loli.net/2024/03/10/yHtaMIjcZ4D6kuR.png)
+
 公式理解：通过动态规划来实现，设 `dp[i][j]` 表示字符串 `A` 的前 `i` 个字符和字符串 `B` 的前 `j` 个字符的编辑距离，我们有以下的状态转移方程：
 
 - 如果 `A[i] == B[j]`，那么 `dp[i][j] = dp[i-1][j-1]`。
@@ -48,13 +48,8 @@ $$
 ##### [*欧式距离*](https://baike.baidu.com/item/%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E5%BA%A6%E9%87%8F/1274107)
 
 该方法不太适用本次作业，没有过多实现，但给出了基本代码
-$$
-d(\mathbf{A}, \mathbf{B}) = 
-\begin{cases} 
-\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}, & \text{if } \text{dimension} = 2 \\
-\sqrt{\sum_{i=1}^{n}(b_i - a_i)^2}, & \text{if } \text{dimension} = n
-\end{cases}
-$$
+
+![](https://s2.loli.net/2024/03/10/WONBvQTzaMgZbDr.png)
 
 
 ### *接口设计*

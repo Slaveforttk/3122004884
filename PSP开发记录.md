@@ -136,27 +136,58 @@
       return Counter(text.split())
   ```
 
-- 相似度的计算
+##### 算法设计
 
-  三种方法均已实现此处仅给出main默认使用的余弦算法
 
-  ```python
-  def cosine_similarity_sklearn(vec1, vec2):
-      # 将Counter对象转换为字符串
-      text1 = ' '.join(['{} {}'.format(k, v) for k, v in vec1.items()])
-      text2 = ' '.join(['{} {}'.format(k, v) for k, v in vec2.items()])
-  
-      # 创建CountVectorizer对象
-      vectorizer = CountVectorizer()
-  
-      # 使用CountVectorizer对象将文本转换为向量
-      X = vectorizer.fit_transform([text1, text2])
-  
-      # 计算余弦相似度
-      similarity = cosine_similarity(X[0], X[1])[0][0]
-  
-      return round(similarity, 2)
-  ```
+
+###### *[余弦相似度]([相似度算法之余弦相似度-CSDN博客](https://blog.csdn.net/zz_dd_yy/article/details/51926305))*
+
+$$
+\cos(\theta)=\frac{\mathbf{A}\cdot\mathbf{B}}{\|\mathbf{A}\|\|\mathbf{B}\|} \tag{Cosine}
+$$
+
+###### *[雅可比相似度](https://blog.csdn.net/wzk4869/article/details/132856703)*
+
+$$
+J(A, B) = \frac{|A \cap B|}{|A \cup B|} \tag{Jaccard}
+$$
+
+###### [*编辑距离*](https://blog.csdn.net/tianjindong0804/article/details/115803158)
+
+莱文斯坦距离 / 编辑距离（`Edit Distance`，`Levenshtein Distance`是编辑距离的一种）
+
+![](https://s2.loli.net/2024/03/10/yHtaMIjcZ4D6kuR.png)
+
+公式理解：通过动态规划来实现，设 `dp[i][j]` 表示字符串 `A` 的前 `i` 个字符和字符串 `B` 的前 `j` 个字符的编辑距离，我们有以下的状态转移方程：
+
+- 如果 `A[i] == B[j]`，那么 `dp[i][j] = dp[i-1][j-1]`。
+- 否则，`dp[i][j] = min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1`。
+
+###### [*欧式距离*](https://baike.baidu.com/item/%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E5%BA%A6%E9%87%8F/1274107)
+
+该方法不太适用本次作业，没有过多实现，但给出了基本代码
+
+![](https://s2.loli.net/2024/03/10/WONBvQTzaMgZbDr.png)
+
+三种方法均已实现此处仅给出main默认使用的余弦算法
+
+```python
+def cosine_similarity_sklearn(vec1, vec2):
+    # 将Counter对象转换为字符串
+    text1 = ' '.join(['{} {}'.format(k, v) for k, v in vec1.items()])
+    text2 = ' '.join(['{} {}'.format(k, v) for k, v in vec2.items()])
+
+    # 创建CountVectorizer对象
+    vectorizer = CountVectorizer()
+
+    # 使用CountVectorizer对象将文本转换为向量
+    X = vectorizer.fit_transform([text1, text2])
+
+    # 计算余弦相似度
+    similarity = cosine_similarity(X[0], X[1])[0][0]
+
+    return round(similarity, 2)
+```
 
 - 将结果输出保存到目标文件
 
