@@ -65,18 +65,6 @@ def preprocess_text(file_path):
     return Counter(text.split())
 
 
-# def preprocess_text(text):
-#     language = detect(text)
-#     if language == 'zh-cn':
-#         text = remove_punctuation_ch(text)
-#         text = segment_words_ch(text)
-#     elif language == 'en':
-#         text = remove_punctuation_en(text)
-#         text = to_lower_en(text)
-#         text = remove_stopwords_en(text)
-#     return Counter(text.split())
-
-
 def cosine_similarity_sklearn(vec1, vec2):
     # 将Counter对象转换为字符串
     text1 = ' '.join(['{} {}'.format(k, v) for k, v in vec1.items()])

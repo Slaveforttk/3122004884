@@ -2,6 +2,8 @@
 
 > *为熟悉软件开发流程，个人项目使用文档记录*
 
+[*设计文档的书写*](https://zhuanlan.zhihu.com/p/552095835)
+
 ### *计划*
 
 初步计划使用熟悉的语言进行编程，开始使用C语言进行构思，调试无果，改用面向对象语言Python进行开发
@@ -57,6 +59,8 @@
    ```
 
 2. 停用词处理--需求不允许读写其他文件，此处停用词处理仅供参考
+
+   STOP_WORDS需要自己指定停用表，初步设想是打开以及做好的停用表文件
 
    ```python
    import jieba
@@ -179,6 +183,51 @@
       print(similarity)
   ```
 
+给出接口设计的调用图，能力有限不能理解所有内容
+
+![](E:\Software-engineering\picture\call_graph.png)
+
+##### 单元测试
+
+初次开发对流程不是很了解，本次单元测试是在进行接口优化后才学习完成的，对本版块还是不太熟悉，测试是模仿写出来的
+
+Python的`unittest`库提供了编写单元测试的框架
+
+首先创建一个测试类
+
+```py
+class TestCosine(unittest.TestCase):
+```
+
+编写测试用例
+
+> *每一个测试用例都是测试类中的一个方法。这个方法会使用`assert`语句来验证代码行为。如果`assert`语句失败（也就是说，它的条件为`False`），那么测试就会失败*
+
+仅给出一个测试案例，其他案例在代码test部分可以找到
+
+```py
+def test_cosine_similarity_sklearn(self):
+       vec1 = Counter(["你好", "世界"])
+       vec2 = Counter(["你好", "世界"])
+       self.assertEqual(cosine_similarity_sklearn(vec1, vec2), 1.0)
+```
+
+代码覆盖率
+
+![](E:\Software-engineering\picture\code_rate.png)
+
+修改了几次效果不是很好，或许忽略了某些情况
+
+##### 集成测试
+
+上一步我们完成了各个单元函数的测试，接下来对整个项目进行测试
+
+设想通过第三方库：tempfile来自创建文件编写以及关闭，本处不在给出代码
+
+```py
+class TestIntegration(unittest.TestCase)
+```
+
 ##### 接口优化
 
 对于当前代码我们在执行的时候不难发现有许多存在的问题，最主要的问题是无法满足5s完成计算的需求，所以我们来分析程序的运行
@@ -189,17 +238,19 @@
  python cosine_similarity.py .\orig.txt .\orig_0.8_add.txt .\output.txt
 ```
 
-此处的两个文件有千字
+*此处的两个文件有千字*
 
 运行函数监测并发图
 
 ![](E:\Software-engineering\picture\first_test.png)
 
-不难发现这是进程耗时巨大
+不难发现这次进程耗时巨大
 
 开始优化处理
 
 ###### 考虑多进程执行
+
+创建一个进程池，通过并行处理，对两个出入进行文档处理，`zip(texts1, texts2,  output_files)`创建一个元组的列表，其中每个元组包含一个来自`texts1`的元素、一个来自`texts2`的元素和一个来自`output_files`的元素。然后，`starmap`函数将这些元组解包，并将元组中的元素作为参数传递给`worker`函数，最终实现并行处理
 
 ```py
 def main():
@@ -222,6 +273,8 @@ def main():
 再次尝试优化分析
 
 通过Python的`cProfile`模块生成性能分析报告
+
+本模块提供方便的查询报告结果，也可以通过Pycharm专业版中的优化分析来实现
 
 ```html
 ncalls  tottime  percall  cumtime  percall filename:lineno(function)
@@ -247,11 +300,53 @@ def main():
         pool.starmap(worker, zip(texts1, texts2, output_files))
 ```
 
-通过对比cpu核心数量与文件数量，取其中最小值可以大大减少无用进程
+通过对比cpu核心数量与文件数量，保证任务量一定小于cpu核心数量，取其中最小值可以大大减少无用进程
 
 执行代码
 
 ![](E:\Software-engineering\picture\last_test.png)
 
 时间减少1秒左右，两次优化将效率提高一倍左右
+
+##### 异常处理
+
+考虑单元的异常
+
+当输入路径不存在的时候
+
+```py
+python main.py .\text1.txt .\text2.txt .\out.txt
+```
+
+程序会自动创建文件，这样不符合要求，我们来修改main_cosine代码
+
+增加一个查询文件是否存在的功能
+
+```py
+# 检查文件路径是否存在
+for file_path in file_paths1 + file_paths2:
+	if not os.path.exists(file_path):
+		raise FileNotFoundError(f"文件 {file_path} 不存在")
+```
+
+异常处理还有无效语言，文件权限等问题，能力有限就不继续探究
+
+在准备结束项目的时候又发现了一个异常，当我尝试传入绝对路径时候，程序总是无法得出结果，于是开始排查异常
+
+首先对绝对路径传入处理，拟使用了 Python 的 `os` 模块中的 `os.path.normpath()` 函数，可惜还是不对
+
+再次分析代码，注意到处理文档函数传入的是一个字符串，这就导致了文档路径被当作字符串处理，这是因为之前在做性能优化时，为了减少IO次数而优化的，这个优化现阶段看起来不是那么好，修改它
+
+```PY
+def preprocess_text(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
+  ...
+```
+
+问题解决
+
+#### Summary
+
+项目基本结束，本项目为软件工程第一次个人项目作业，基本实现了普通要求，也存在许多待完善的地方，时间能力有限就不继续探究
 
